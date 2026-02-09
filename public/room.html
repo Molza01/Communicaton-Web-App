@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room - Real-Time Communication</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="room-container">
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Room Header -->
+            <div class="room-header">
+                <div>
+                    <h2 id="room-name">Meeting Room</h2>
+                    <p class="room-id">Room ID: <strong id="room-id-display"></strong></p>
+                </div>
+                <div class="room-controls">
+                    <button class="control-btn active" id="video-btn">Stop Video</button>
+                    <button class="control-btn active" id="audio-btn">Mute</button>
+                    <button class="control-btn" id="screen-share-btn">Share Screen</button>
+                    <button class="control-btn danger" id="leave-btn">Leave Room</button>
+                </div>
+            </div>
+
+            <!-- Video Grid -->
+            <div class="video-grid" id="video-grid"></div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Participants Section -->
+            <div class="sidebar-section" id="participants-section">
+                <div class="sidebar-header">
+                    Participants (<span id="member-count">1</span>)
+                </div>
+                <div class="sidebar-content">
+                    <div id="participants-list" class="participants-list"></div>
+                </div>
+            </div>
+
+            <!-- Whiteboard Section -->
+            <div class="sidebar-section" id="whiteboard-section">
+                <div class="sidebar-header">Whiteboard</div>
+                <div class="sidebar-content" style="padding: 0;">
+                    <canvas id="whiteboard"></canvas>
+                </div>
+                <div class="whiteboard-controls">
+                    <input type="color" id="color-picker" class="color-picker" value="#000000">
+                    <button class="btn-small" id="clear-board-btn">Clear</button>
+                </div>
+            </div>
+
+            <!-- Chat Section -->
+            <div class="sidebar-section" id="chat-section">
+                <div class="sidebar-header">Chat</div>
+                <div class="sidebar-content">
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" placeholder="Type a message...">
+                        <button class="btn-small" id="send-chat-btn">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Sharing Section -->
+            <div class="sidebar-section" id="file-section">
+                <div class="sidebar-header">File Sharing</div>
+                <div class="sidebar-content">
+                    <div class="file-upload">
+                        <div class="file-input-wrapper">
+                            <input type="file" id="file-input">
+                            <label for="file-input" class="file-input-label">
+                                📁 Click to upload file
+                            </label>
+                        </div>
+                    </div>
+                    <div class="file-list" id="file-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.io Client -->
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <!-- CryptoJS for encryption -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+
+    <!-- App Scripts -->
+    <script src="/js/firebaseConfig.js"></script>
+    <script src="/js/encryption.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/whiteboard.js"></script>
+    <script src="/js/room.js"></script>
+
+    <script>
+        // Check authentication
+        if (!AuthManager.isAuthenticated()) {
+            window.location.href = '/index.html';
+        }
+
+        // Get room ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('roomId');
+
+        if (!roomId) {
+            alert('No room ID provided');
+            window.location.href = '/dashboard.html';
+        }
+
+        // Get user info
+        const user = AuthManager.getCurrentUser();
+        const userName = user.email.split('@')[0]; // Use email username as display name
+
+        // Display room info
+        document.getElementById('room-id-display').textContent = roomId;
+        const roomName = localStorage.getItem('currentRoomName') || 'Meeting Room';
+        document.getElementById('room-name').textContent = roomName;
+
+        // Initialize room
+        const roomManager = new RoomManager(roomId, user.userId, userName);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Real-Time Communication</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="dashboard-header">
+            <div>
+                <h1>Communication Dashboard</h1>
+                <p class="user-email" id="user-email"></p>
+            </div>
+            <div class="user-info">
+                <button class="btn-logout" id="logout-btn">Logout</button>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <!-- Create Room Card -->
+            <div class="dashboard-card">
+                <h2>Create New Room</h2>
+                <p>Start a new video call session and invite others to join</p>
+
+                <div class="form-group">
+                    <label for="room-name">Room Name (Optional)</label>
+                    <input type="text" id="room-name" placeholder="My Meeting Room">
+                </div>
+
+                <button class="btn" id="create-room-btn">Create Room</button>
+            </div>
+
+            <!-- Join Room Card -->
+            <div class="dashboard-card">
+                <h2>Join Existing Room</h2>
+                <p>Enter a room ID to join an ongoing session</p>
+
+                <div class="form-group">
+                    <label for="room-id">Room ID</label>
+                    <input type="text" id="room-id" placeholder="Enter room ID">
+                </div>
+
+                <button class="btn" id="join-room-btn">Join Room</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <!-- CryptoJS for encryption -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+
+    <!-- App Scripts -->
+    <script src="/js/firebaseConfig.js"></script>
+    <script src="/js/encryption.js"></script>
+    <script src="/js/auth.js"></script>
+
+    <script>
+        // Check authentication
+        if (!AuthManager.isAuthenticated()) {
+            window.location.href = '/index.html';
+        }
+
+        const user = AuthManager.getCurrentUser();
+        document.getElementById('user-email').textContent = user.email;
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            AuthManager.logout();
+        });
+
+        // Create room
+        document.getElementById('create-room-btn').addEventListener('click', () => {
+            const roomName = document.getElementById('room-name').value || 'Untitled Room';
+            const roomId = generateRoomId();
+
+            // Store room info in localStorage
+            localStorage.setItem('currentRoomId', roomId);
+            localStorage.setItem('currentRoomName', roomName);
+
+            // Redirect to room
+            window.location.href = `/room.html?roomId=${roomId}`;
+        });
+
+        // Join room
+        document.getElementById('join-room-btn').addEventListener('click', () => {
+            const roomId = document.getElementById('room-id').value.trim();
+
+            if (!roomId) {
+                alert('Please enter a room ID');
+                return;
+            }
+
+            // Store room info in localStorage
+            localStorage.setItem('currentRoomId', roomId);
+            localStorage.setItem('currentRoomName', 'Joined Room');
+
+            // Redirect to room
+            window.location.href = `/room.html?roomId=${roomId}`;
+        });
+
+        // Generate random room ID
+        function generateRoomId() {
+            return 'room-' + Math.random().toString(36).substr(2, 9);
+        }
+    </script>
+</body>
+
+</html>
