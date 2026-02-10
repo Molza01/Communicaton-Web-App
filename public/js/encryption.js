@@ -1,7 +1,7 @@
 // AES Encryption/Decryption using CryptoJS
 // Note: In production, use environment variables for the secret key
 
-const ENCRYPTION_KEY = 'your_32_character_secret_key_here'; // Must match server .env
+const ENCRYPTION_KEY = '24e2b42f9273779769b67979c4bf027d '; // Must match server .env
 
 const EncryptionUtil = {
   // Encrypt text

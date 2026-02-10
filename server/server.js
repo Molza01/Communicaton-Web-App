@@ -18,7 +18,7 @@ const io = socketIo(server, {
 
 // Middleware
 app.use(cors({
-  origin: "https://communication-web-app-9598f.web.app",
+  origin: "https://communicaton-web-app.onrender.com",
   methods: ["GET", "POST"],
   credentials: true
 }));

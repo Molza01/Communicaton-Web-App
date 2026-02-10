@@ -4,7 +4,7 @@ class RoomManager {
     this.roomId = roomId;
     this.userId = userId;
     this.userName = userName;
-    this.socket = io('https://your-backend-name.onrender.com', {
+    this.socket = io('https://communicaton-web-app.onrender.com', {
   transports: ['websocket']
 });
     this.peers = new Map();
