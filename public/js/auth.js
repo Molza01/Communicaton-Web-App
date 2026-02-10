@@ -58,7 +58,7 @@ const AuthManager = {
   // Generate JWT from backend
   generateJWT: async function(userId, email) {
     try {
-      const response = await fetch('https://communicaton-web-app.onrender.com', {
+      const response = await fetch('https://communicaton-web-app.onrender.com/api/token/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -77,7 +77,7 @@ const AuthManager = {
   // Verify JWT token
   verifyToken: async function(token) {
     try {
-      const response = await fetch('https://communicaton-web-app.onrender.com', {
+      const response = await fetch('https://communicaton-web-app.onrender.com/api/token/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
