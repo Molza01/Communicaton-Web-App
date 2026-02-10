@@ -27,7 +27,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Routes
-const tokenRoutes = require('./routes/token');
+
 app.use('/api/token', tokenRoutes);
 
 // Store active rooms and users
