@@ -1,12 +1,15 @@
 // Whiteboard functionality
 class Whiteboard {
-  constructor(canvasId, roomId) {
+  constructor(canvasId, roomId, socket) {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext('2d');
     this.roomId = roomId;
+    this.socket = socket;
     this.isDrawing = false;
     this.currentColor = '#000000';
     this.lineWidth = 2;
+    this.lastX = null;
+    this.lastY = null;
     
     this.setupCanvas();
     this.setupEventListeners();
@@ -63,6 +66,9 @@ class Whiteboard {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
+    this.lastX = x;
+    this.lastY = y;
+    
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
   }
@@ -79,14 +85,21 @@ class Whiteboard {
     this.ctx.lineTo(x, y);
     this.ctx.stroke();
     
-    // Emit drawing data to other users via Firestore
-    this.saveDrawingToFirestore({
-      x: x / this.canvas.width,
-      y: y / this.canvas.height,
-      color: this.currentColor,
-      lineWidth: this.lineWidth,
-      type: 'draw'
+    // Emit drawing data to other users via Socket.io
+    this.socket.emit('drawing', {
+      roomId: this.roomId,
+      data: {
+        x0: this.lastX / this.canvas.width,
+        y0: this.lastY / this.canvas.height,
+        x1: x / this.canvas.width,
+        y1: y / this.canvas.height,
+        color: this.currentColor,
+        lineWidth: this.lineWidth
+      }
     });
+    
+    this.lastX = x;
+    this.lastY = y;
   }
 
   stopDrawing() {
@@ -107,59 +120,31 @@ class Whiteboard {
   clear() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
-    // Emit clear event to Firestore
-    this.saveDrawingToFirestore({
-      type: 'clear'
+    // Emit clear event via Socket.io
+    this.socket.emit('clear-canvas', {
+      roomId: this.roomId
     });
   }
 
-  // Save drawing data to Firestore for real-time sync
-  async saveDrawingToFirestore(data) {
-    try {
-      await firebaseDb.collection('whiteboards').doc(this.roomId).collection('drawings').add({
-        ...data,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    } catch (error) {
-      console.error('Error saving drawing to Firestore:', error);
-    }
-  }
-
-  // Listen to Firestore for remote drawing events
+  // Listen to Socket.io for remote drawing events
   listenToRemoteDrawing() {
-    let lastX = null;
-    let lastY = null;
-
-    firebaseDb.collection('whiteboards').doc(this.roomId).collection('drawings')
-      .orderBy('timestamp', 'asc')
-      .onSnapshot((snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          if (change.type === 'added') {
-            const data = change.doc.data();
-            
-            if (data.type === 'clear') {
-              this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-              lastX = null;
-              lastY = null;
-            } else if (data.type === 'draw') {
-              const x = data.x * this.canvas.width;
-              const y = data.y * this.canvas.height;
-              
-              if (lastX !== null && lastY !== null) {
-                this.ctx.beginPath();
-                this.ctx.moveTo(lastX, lastY);
-                this.ctx.strokeStyle = data.color;
-                this.ctx.lineWidth = data.lineWidth;
-                this.ctx.lineTo(x, y);
-                this.ctx.stroke();
-              }
-              
-              lastX = x;
-              lastY = y;
-            }
-          }
-        });
-      });
+    this.socket.on('drawing', (data) => {
+      const x0 = data.x0 * this.canvas.width;
+      const y0 = data.y0 * this.canvas.height;
+      const x1 = data.x1 * this.canvas.width;
+      const y1 = data.y1 * this.canvas.height;
+      
+      this.ctx.beginPath();
+      this.ctx.moveTo(x0, y0);
+      this.ctx.strokeStyle = data.color;
+      this.ctx.lineWidth = data.lineWidth;
+      this.ctx.lineTo(x1, y1);
+      this.ctx.stroke();
+    });
+    
+    this.socket.on('clear-canvas', () => {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    });
   }
 }
 

@@ -11,14 +11,27 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
+    origin: [
+      'https://communicaton-web-app.web.app',
+      'https://communicaton-web-app.firebaseapp.com',
+      'http://localhost:3000',
+      'http://localhost:5000',
+      'http://127.0.0.1:5000'
+    ],
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 
 // Middleware
 app.use(cors({
-  origin: "https://communicaton-web-app.onrender.com",
+  origin: [
+    'https://communicaton-web-app.web.app',
+    'https://communicaton-web-app.firebaseapp.com',
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'http://127.0.0.1:5000'
+  ],
   methods: ["GET", "POST"],
   credentials: true
 }));

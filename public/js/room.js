@@ -44,8 +44,8 @@ class RoomManager {
         userName: this.userName
       });
       
-      // Initialize whiteboard
-      this.whiteboard = new Whiteboard('whiteboard', this.roomId);
+      // Initialize whiteboard with socket
+      this.whiteboard = new Whiteboard('whiteboard', this.roomId, this.socket);
       this.whiteboard.listenToRemoteDrawing();
       
       // Setup UI event listeners
@@ -328,7 +328,7 @@ class RoomManager {
     }
   }
 
-  async sendChatMessage(message) {
+  sendChatMessage(message) {
     if (!message.trim()) return;
 
     const encryptedMessage = EncryptionUtil.encrypt(message);
@@ -340,25 +340,16 @@ class RoomManager {
       timestamp: new Date().toISOString()
     };
 
-    // Save to Firestore
-    try {
-      await firebaseDb.collection('rooms').doc(this.roomId).collection('messages').add(chatMessage);
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
+    // Send via Socket.io for real-time delivery
+    this.socket.emit('chat-message', {
+      roomId: this.roomId,
+      message: chatMessage
+    });
   }
 
   listenToChatMessages() {
-    firebaseDb.collection('rooms').doc(this.roomId).collection('messages')
-      .orderBy('timestamp', 'asc')
-      .onSnapshot((snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          if (change.type === 'added') {
-            const message = change.doc.data();
-            this.displayChatMessage(message);
-          }
-        });
-      });
+    // Chat messages are now handled via Socket.io listener in setupSocketListeners()
+    // This method is kept for compatibility but does nothing
   }
 
   displayChatMessage(message) {
