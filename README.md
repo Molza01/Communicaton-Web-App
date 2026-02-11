@@ -200,11 +200,11 @@ Or for development with auto-restart:
 npm run dev
 ```
 
-The server will start at: **http://localhost:5000**
+The server will start at: **https://communicaton-web-app.onrender.com**
 
 ### Access the Application
 
-1. Open your browser and navigate to: **http://localhost:5000**
+1. Open your browser and navigate to: **https://communicaton-web-app.onrender.com**
 2. You'll see the login/register page
 3. Create a new account or login with existing credentials
 4. After login, you'll be redirected to the dashboard
